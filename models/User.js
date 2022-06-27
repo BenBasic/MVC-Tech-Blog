@@ -71,4 +71,5 @@ User.init(
   }
 );
 
+// Exports the module to be used in other files
 module.exports = User;
