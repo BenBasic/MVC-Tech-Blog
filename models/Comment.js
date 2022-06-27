@@ -41,6 +41,7 @@ Comment.init(
         }
     },
     {
+        // Pass in the imported sequelize connection to the database, while not allowing the database table name to be pluralized, and using underscores instead of camel-casing, then assigning the model's name in the database
         sequelize,
         freezeTableName: true,
         underscored: true,
