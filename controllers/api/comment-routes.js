@@ -34,3 +34,26 @@ router.post('/', withAuth, (req, res) => {
         });
     }
 });
+
+// Deletes a comment, and checks if the user is logged in and authenticated so a user cant delete a different user's post
+router.delete('/:id', withAuth, (req, res) => {
+    // Deletes comment from Comment table where the id matches the requested id parameter from the requested URL
+    Comment.destroy({
+        where: {
+          id: req.params.id
+        }
+    })
+        .then(dbCommentData => {
+            // If there is no matching id for the comment requested to be deleted, log an error
+            if (!dbCommentData) {
+                res.status(404).json({ message: 'No comment with this id exists' });
+                return;
+            }
+            res.json(dbCommentData); // Returning the result data as JSON Object
+        })
+        .catch(err => {
+            // if there is an error, it will log an error
+            console.log(err);
+            res.status(500).json(err);
+    });
+});
