@@ -106,4 +106,52 @@ router.post('/', withAuth, (req, res) => {
     });
 });
 
+// Update a post's title or text for post that matches the requested id
+router.put('/:id', withAuth, (req, res) => {
+    Post.update(req.body,
+        {
+            // Checks for the request's id property, this will make it check for if the id parameter of both the request and the result match
+            where: 
+            {
+                id: req.params.id
+            }
+        }
+    )
+    .then(dbPostData => {
+        // If there is no matching id for the post requested, log an error
+        if (!dbPostData) {
+            res.status(404).json({ message: 'No post with this id exists' });
+            return;
+        }
+        res.json(dbPostData); // Returning the result data as JSON Object
+    })
+    .catch(err => {
+        // if there is an error, it will log an error
+        console.log(err);
+        res.status(500).json(err)
+    });
+});
 
+// Deletes a post for post that matches the requested id
+router.delete('/:id', withAuth, (req, res) => {
+    Post.destroy({
+      // Checks for the request's id property, this will make it check for if the id parameter of both the request and the result match
+      where: 
+      {
+        id: req.params.id
+      }
+    })
+      .then(dbPostData => {
+        // If there is no matching id for the post requested, log an error
+        if (!dbPostData) {
+          res.status(404).json({ message: 'No post with this id exists' });
+          return;
+        }
+        res.json(dbPostData); // Returning the result data as JSON Object
+      })
+      .catch(err => {
+        // if there is an error, it will log an error
+        console.log(err);
+        res.status(500).json(err);
+    });
+});
