@@ -118,8 +118,47 @@ router.post('/login',  (req, res) => {
           req.session.username = dbUserData.username;
           req.session.loggedIn = true;
     
-          res.json({ user: dbUserData, message: 'Cool, you logged in!' });
+          res.json({ user: dbUserData, message: 'Cool, you logged in!' }); // Returning the result data as JSON Object
         });
     });  
 });
 
+// Log out an existing user
+router.post('/logout', withAuth, (req, res) => {
+    if (req.session.loggedIn) {
+      req.session.destroy(() => {
+        // Sets result status to 204 because the client wont need to load a new page, ends the logged in session
+        res.status(204).end();
+      });
+    } else {
+      // If there is any issue with the logged in session, then the session will end
+      res.status(404).end();
+    }
+})
+
+// Updates an existing user by id
+router.put('/:id', withAuth, (req, res) => {
+    // Updates an existing user in the User table with the properties of username, email, and password. Will only update key/value pairs that are passed through
+    User.update(req.body, {
+        // Using a hook to hash only the password (hook originates from User model)
+        individualHooks: true,
+        where: 
+        {
+            // Checks for the request's id property, this will make it check for if the id parameter of both the request and the result match
+            id: req.params.id
+        }
+    })
+      .then(dbUserData => {
+        // If there is no matching id for the user requested, log an error
+        if (!dbUserData[0]) {
+          res.status(404).json({ message: 'No user with this id exists' });
+          return;
+        }
+        res.json(dbUserData); // Returning the result data as JSON Object
+      })
+      .catch(err => {
+        // if there is an error, it will log an error
+        console.log(err);
+        res.status(500).json(err);
+    });
+})
