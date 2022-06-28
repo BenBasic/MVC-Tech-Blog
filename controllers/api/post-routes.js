@@ -67,7 +67,8 @@ router.get('/:id', (req, res) => {
         {
             model: Comment,
             attributes: ['id', 'comment_text', 'post_id', 'user_id', 'created_at'],
-            include: {
+            include: 
+            {
                 model: User,
                 attributes: ['username']
             }
@@ -83,6 +84,22 @@ router.get('/:id', (req, res) => {
         res.json(dbPostData); // Returning the result data as JSON Object
     })
       .catch(err => {
+        // if there is an error, it will log an error
+        console.log(err);
+        res.status(500).json(err);
+    });
+});
+
+// Creates a new post
+router.post('/', withAuth, (req, res) => {
+    // Creates a new post in the Post table with the properties of title, post_text, and user_id
+    Post.create({
+        title: req.body.title,
+        post_text: req.body.post_text,
+        user_id: req.session.user_id
+    })
+    .then(dbPostData => res.json(dbPostData)) // Returning the result data as JSON Object
+    .catch(err => {
         // if there is an error, it will log an error
         console.log(err);
         res.status(500).json(err);
