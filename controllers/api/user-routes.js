@@ -162,3 +162,31 @@ router.put('/:id', withAuth, (req, res) => {
         res.status(500).json(err);
     });
 })
+
+// Deletes an existing user by id
+router.delete('/:id', withAuth, (req, res) => {
+    // Deletes a user based on their id
+    User.destroy({
+      where: 
+      {
+        // Checks for the request's id property, this will make it check for if the id parameter of both the request and the result match
+        id: req.params.id
+      }
+    })
+      .then(dbUserData => {
+        // If there is no matching id for the user requested, log an error
+        if (!dbUserData) {
+          res.status(404).json({ message: 'No user with this id exists' });
+          return;
+        }
+        res.json(dbUserData); // Returning the result data as JSON Object
+      })
+      .catch(err => {
+        // if there is an error, it will log an error
+        console.log(err);
+        res.status(500).json(err);
+    });
+});
+
+// Exports the module to be used in other files
+module.exports = router;
