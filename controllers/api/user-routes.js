@@ -64,3 +64,62 @@ router.get('/:id', (req, res) => {
     });
 });
 
+// Adds a new user
+router.post('/', (req, res) => {
+    // Creates a new user in the User table with the properties of username, email, and password
+    User.create({
+      username: req.body.username,
+      email: req.body.email,
+      password: req.body.password
+    })
+      // Sends the user data back to the client as confirmation and then saves the session
+      .then(dbUserData => {
+        req.session.save(() => {
+          req.session.user_id = dbUserData.id;
+          req.session.username = dbUserData.username;
+          req.session.loggedIn = true;
+      
+          res.json(dbUserData); // Returning the result data as JSON Object
+        });
+    })
+      // if there is an error, it will log an error
+      .catch(err => {
+        console.log(err);
+        res.status(500).json(err);
+    });
+});
+
+// Login route for the user
+router.post('/login',  (req, res) => {
+    // Running the findOne method to get a single User from the table which has a matching email value
+    User.findOne({
+        where: 
+        {
+        // Checks for the request's email property, this will make it check for if the email parameter of both the request and the result match
+        email: req.body.email
+        }
+    }).then(dbUserData => {
+        // If there is no matching email for the email requested, log an error
+        if (!dbUserData) {
+        res.status(400).json({ message: 'No user exists with that email address!' });
+        return;
+        }
+        // Calling the checkPassword method as from the User model to verify if the user's entered password is valid
+        const validPassword = dbUserData.checkPassword(req.body.password);
+        // If the password entered doesn't match the existing password for the user attemtping to log in, log an error
+        if (!validPassword) {
+            res.status(400).json({ message: 'Incorrect password!' });
+            return;
+        }
+        // Save the session, and return the user object with the associated properties, then log a success message
+        req.session.save(() => {
+          // declare session variables
+          req.session.user_id = dbUserData.id;
+          req.session.username = dbUserData.username;
+          req.session.loggedIn = true;
+    
+          res.json({ user: dbUserData, message: 'Cool, you logged in!' });
+        });
+    });  
+});
+
