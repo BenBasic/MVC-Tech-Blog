@@ -57,3 +57,6 @@ router.delete('/:id', withAuth, (req, res) => {
             res.status(500).json(err);
     });
 });
+
+// Exports the module to be used in other files
+module.exports = router;
