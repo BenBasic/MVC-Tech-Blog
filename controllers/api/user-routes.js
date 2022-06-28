@@ -23,3 +23,44 @@ router.get('/', (req, res) => {
     });
 });
 
+// Get a single user by id
+router.get('/:id', (req, res) => {
+    // Running the findOne method to get a single User from the table which has a matching id value
+    User.findOne({
+      // When the requested data is recieved, exclude the password property for security
+      attributes: { exclude: ['password'] },
+      where: {
+        // Checks for the request's id property, this will make it check for if the id parameter of both the request and the result match
+        id: req.params.id
+      },
+      // Includes the posts the user has created as well as the posts the user has commented on
+      include: [
+        {
+          model: Post,
+          attributes: ['id', 'title', 'post_text', 'created_at']
+        },
+        {
+            model: Comment,
+            attributes: ['id', 'comment_text', 'post_id', 'user_id', 'created_at'],
+            include: {
+                model: Post,
+                attributes: ['title']
+            }
+        }
+      ]
+    })
+      .then(dbUserData => {
+        if (!dbUserData) {
+          // If there is no matching id for the user requested, log an error
+          res.status(404).json({ message: 'No user with this id exists' });
+          return;
+        }
+        res.json(dbUserData); // Returning the result data as JSON Object
+      })
+      .catch(err => {
+        // if there is an error, it will log an error
+        console.log(err);
+        res.status(500).json(err);
+    });
+});
+
